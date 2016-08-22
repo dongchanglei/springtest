@@ -1,0 +1,89 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
+
+	<bean id="log-log4j" class="com.alibaba.druid.filter.logging.Log4jFilter">
+	    <property name="resultSetLogEnabled" value="false" />
+	    <property name="resultSetLogErrorEnabled" value="true"/>
+	    <property name="statementExecutableSqlLogEnable" value="true" />
+	    <property name="dataSourceLogEnabled" value="true"/>
+	    <property name="connectionLogEnabled" value="false"/>
+	    <property name="connectionLogErrorEnabled" value="true"/>
+	    <property name="statementLogEnabled" value="false"/>
+	    <property name="statementLogErrorEnabled" value="true"/>
+	</bean>
+	
+	<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close"> 
+		<!-- 基本属性 url、user、password -->
+		<property name="url" value="jdbc:oracle:thin:@10.90.2.4:1521:devdb" />
+ 		<property name="username" value="devuser" />
+		<!-- <property name="password" value="devuser" /> -->
+   		<property name="password" value="EZNXkZk0agIJYPv5/DVDtLdizJ7cAB6+ZMB/QaEaCJjFbwGN/MeOj6ucCzJVBmuWdhJrleTkqnhJ/EZju3w1XA==" />
+	    
+		<!-- 配置初始化大小、最小、最大 -->
+		<property name="initialSize" value="10" />
+		<property name="minIdle" value="10" /> 
+		<property name="maxActive" value="300" />
+		
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name="maxWait" value="60000" />
+		
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name="timeBetweenEvictionRunsMillis" value="60000" />
+		
+		<!-- 定期输出监控日志 -->
+		<!-- <property name="timeBetweenLogStatsMillis" value="3000" /> -->
+		
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		
+		<property name="removeAbandoned" value="true"/> <!-- 打开removeAbandoned功能 -->
+    	<property name="removeAbandonedTimeout" value="180" /> <!-- 1800秒，也就是30分钟 -->
+    	<property name="logAbandoned" value="true" /> <!-- 关闭abanded连接时输出错误日志 -->
+		
+		<property name="validationQuery" value="SELECT 'x' from dual" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+		
+		<!-- 打开PSCache，并且指定每个连接上PSCache的大小 -->
+		<!-- <property name="poolPreparedStatements" value="true" /> -->
+		<!-- <property name="maxPoolPreparedStatementPerConnectionSize" value="20" /> -->
+		
+		<!-- 配置监控统计拦截的filters -->
+		<property name="filters" value="config" />
+		<property name="proxyFilters">
+	        <list>
+	            <ref bean="log-log4j"/>
+	        </list>
+    	</property>
+		<!-- 配置druid加密功能 -->
+		<property name="connectionProperties" value="config.decrypt=true" />
+		<!-- 将多个datasource合并 -->
+		<!-- <property name="useGlobalDataSourceStat" value="true" />-->
+  	</bean>
+
+	<bean id="jdbcTemplate"
+		class="org.springframework.jdbc.core.JdbcTemplate" abstract="false"
+		lazy-init="false" autowire="default">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+	
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	
+	<context:component-scan base-package="com.comall"></context:component-scan>
+
+</beans>
